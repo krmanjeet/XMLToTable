@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Bootstrap Example</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <style>
+            
+            table, th, td {
+  border: 1px solid black;
+  padding:5px;
+}
+        </style>
+    </head>
+    <body>
+
+        <div class="container-fluid">
+            <button onclick="getData()">Submit</button>
+            <button onclick="prepareData()">Prepare</button>
+               
+            <p>Resize the browser window to see the effect.</p>
+            <div class="row">
+                <div class="col-sm-6" style="background-color:lavenderblush;">
+                    <textarea id="textarea" style="width: 500px; height: 500px;"></textarea>
+                </div>
+
+                <div class="col-sm-3" style="background-color:lavender;">
+                    <table id="table">
+                        <thead><tr><td><strong>Missing Fields</strong></td><td><strong>Status</strong></td></thead>
+                        <tbody id='tbody'>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        function prepareData()
+        {
+            $("#textarea").empty();
+            const xmlString = document.getElementById('textarea').value;
+            var startIndex=xmlString.indexOf('<chbTransmissionResponse>');
+            var endindex=xmlString.indexOf('</chbTransmissionResponse>');
+             alert("startindex:"+startIndex+" endIndx:"+endindex);
+           
+            var stringlegnth="</chbTransmissionResponse>".length;
+            var subString=xmlString.substring(startIndex,endindex+stringlegnth);
+            alert("subString:"+subString);
+             document.getElementById("textarea").value=""
+            document.getElementById("textarea").value=subString;
+
+        }
+        function getData()
+        {
+            $("#tbody").empty();
+            const xmlString = document.getElementById('textarea').value;
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+
+            const table = document.createElement('table');
+
+            const tags = xmlDoc.getElementsByTagName("*");
+            const tagNames = [];
+            var rowData="";
+            for (let i = 0; i < tags.length; i++) {
+                
+                tagNames.push(tags[i].nodeName);
+//                rowData=rowData+singleNode(books[0],tags[i].nodeName);
+            }
+            var rootElement=tagNames[0];
+             const books = xmlDoc.getElementsByTagName(rootElement);
+            for (let i = 1; i < tagNames.length; i++) {
+                if(tagNames[i]=="description")
+                {
+                    var records=singleNode(books[0],tagNames[i]).split(",");
+                    console.log("Records:"+records);    
+                for(var j=0;j<records.length;j++)
+                    {
+                        var fieldName=records[j].split("=")[0];
+                        var fieldValue= records[j].split("=")[1];
+                        console.log("fieldName:"+fieldName+" fieldValue:"+fieldValue);;
+                        rowData=rowData+"<tr><td>"+fieldName+"</td><td>" + fieldValue + "</td></tr>"
+                    }
+                }
+            }
+           
+            $("#tbody").append(rowData);
+
+
+        }
+        function singleNode(root,fieldName)
+        {
+//            const book = books[i];
+            const fieldValue = root.getElementsByTagName(fieldName)[0].textContent;
+//            var row = "<tr><td>"+fieldName+"</td><td>" + fieldValue + "</td></tr>";
+            return fieldValue;
+        }
+    </script>
+</html>
